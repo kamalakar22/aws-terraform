@@ -1,0 +1,34 @@
+name: Terraform Automation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
+
+      - name: Configure AWS Credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          terraform init
+
+      - name: Checkov Security and Policy Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: "./terraform"  # Adjust path as per your Terraform directory structure
+
+      - name: Terraform Validate
+        run: |
+          terraform validate
